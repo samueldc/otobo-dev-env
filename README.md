@@ -3,10 +3,16 @@ OTOBO development environment
 
 Here you find the Vagrant file and Ansible playbooks needed for set up a complete OTOBO development environment with three guest VMs: a MySQL database VM, a OTOBO production application server VM and a OTOBO development application server VM.
 
-Instructions
+Requirements
 ============
 
-Install Vagrant, Vagrant libvirt plugin and Ansible on your host machine. You may need to install aditional Ansible modules.
+* Vagrant
+  * Vagrant libvirt plugin
+* Ansible
+  * Some aditional Ansible modules
+
+Instructions
+============
 
 Run `vagrant up`.
 
