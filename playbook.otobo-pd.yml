@@ -18,12 +18,22 @@
       - libapache2-mod-perl2
       state: present
 
-  - name: configure apache user
-    user:
-      name: www-data
-      append: yes
-      groups: 
-      - vagrant
+#  - name: download, unpack and install otobo
+#    unarchive:
+#      src: https://ftp.otobo.org/pub/otobo/otobo-latest-10.0.tar.gz
+#      dest: /opt/otobo
+#      group: www-data
+#      owner: otobo
+#      remote_src: yes
+#      extra_opts: 
+#      - --strip-components=1
+#      creates: /opt/otobo/Kernel
+#
+  - name: checkout git repository
+    git:
+      repo: https://github.com/RotherOSS/otobo.git
+      force: yes
+      dest: /opt/otobo
 
   - name: configure otobo user
     user:
@@ -31,7 +41,6 @@
       comment: OTOBO user
       groups: 
       - www-data 
-      - vagrant
       home: /opt/otobo
       name: otobo
       shell: /bin/bash
@@ -44,16 +53,13 @@
       line: '%sudo   ALL=NOPASSWD: /bin/su - otobo'
       state: present
 
-  - name: download, unpack and install otobo
-    unarchive:
-      src: https://ftp.otobo.org/pub/otobo/otobo-latest-10.0.tar.gz
-      dest: /opt/otobo
-      group: www-data
+  - name: change otobo directory permissions
+    file:
+      path: /opt/otobo
+      state: directory
       owner: otobo
-      remote_src: yes
-      extra_opts: 
-      - --strip-components=1
-      creates: /opt/otobo/Kernel
+      group: www-data
+      recurse: yes
 
   - name: install perl modules
     shell: sh -c "$(perl /opt/otobo/bin/otobo.CheckModules.pl -inst)"

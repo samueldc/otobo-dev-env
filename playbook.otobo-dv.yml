@@ -1,0 +1,94 @@
+---
+- name: configure local machine for me
+  hosts: all
+  become: yes
+
+  tasks:
+  
+  - name: disable ubuntu apparmor
+    service:
+      name: apparmor
+      enabled: no
+      state: stopped
+
+  - name: install apache web server
+    apt:
+      name:
+      - apache2
+      - libapache2-mod-perl2
+      state: present
+
+  - name: checkout git repository
+    become_user: otobo
+    git:
+      repo: https://github.com/samueldc/otobo.git
+      force: yes
+      dest: /opt/otobo
+
+  - name: configure otobo user
+    user:
+      append: yes
+      comment: OTOBO user
+      groups: 
+      - www-data 
+      home: /opt/otobo
+      name: otobo
+      shell: /bin/bash
+      state: present
+      system: yes
+
+  - name: allow su - otobo without password
+    lineinfile:
+      path: "/etc/sudoers"
+      line: '%sudo   ALL=NOPASSWD: /bin/su - otobo'
+      state: present
+
+  - name: change otobo directory permissions
+    file:
+      path: /opt/otobo
+      state: directory
+      owner: otobo
+      group: www-data
+      recurse: yes
+
+  - name: install perl modules
+    shell: sh -c "$(perl /opt/otobo/bin/otobo.CheckModules.pl -inst)"
+
+  - name: activate the default configuration file
+    copy:
+      src: /opt/otobo/Kernel/Config.pm.dist 
+      dest: /opt/otobo/Kernel/Config.pm
+      remote_src: yes
+
+  - name: install perl tidy all module
+    apt:
+      name: libcode-tidyall-perl
+
+  - name: activate apache modules
+    shell: a2enmod perl && a2enmod deflate && a2enmod filter && a2enmod headers
+
+  - name: configure apache for otobo
+    file:
+      src: /opt/otobo/scripts/apache2-httpd.include.conf
+      path: /etc/apache2/sites-enabled/zzz_otobo.conf
+      state: link
+      remote_src: yes
+
+  - name: whitelist otobo directory in apache configuration
+    blockinfile:
+      path: /etc/apache2/apache2.conf
+      marker: "# {mark} OTOBO APACHE WHITELIST"
+      insertafter: EOF
+      block: |
+        <Directory /opt/otobo/>
+          Options Indexes FollowSymLinks
+          AllowOverride None
+          Require all granted
+        </Directory>
+
+  - name: restart apache
+    service:
+      name: apache2
+      enabled: yes
+      state: restarted
+  
