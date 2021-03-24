@@ -152,7 +152,7 @@
 #    become_user: "{{ username }}"
 #    get_url:
 #      url: https://downloads.camunda.cloud/release/camunda-modeler/nightly/camunda-modeler-nightly-linux-x64.tar.gz
-#      dest: /home/samueldc/Downloads
+#      dest: /home/{{ username }}/Downloads
 #      group: "{{ username }}"
 #      owner: "{{ username }}"
 #      mode: '0660'
@@ -267,7 +267,7 @@
   - name: configure spaceship prompt
     become: yes
     become_user: "{{ username }}"
-    shell: "ln -s /home/{{ username }}/.oh-my-zsh/themes/spaceship-prompt/spaceship.zsh-theme /home/samueldc/.oh-my-zsh/themes/spaceship.zsh-theme"
+    shell: "ln -s /home/{{ username }}/.oh-my-zsh/themes/spaceship-prompt/spaceship.zsh-theme /home/{{ username }}/.oh-my-zsh/themes/spaceship.zsh-theme"
     args:
       creates: "/home/{{ username }}/.oh-my-zsh/themes/spaceship.zsh-theme"
 

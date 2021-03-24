@@ -53,14 +53,6 @@
       line: '%sudo   ALL=NOPASSWD: /bin/su - otobo'
       state: present
 
-  - name: change otobo directory permissions
-    file:
-      path: /opt/otobo
-      state: directory
-      owner: otobo
-      group: www-data
-      recurse: yes
-
   - name: install perl modules
     shell: sh -c "$(perl /opt/otobo/bin/otobo.CheckModules.pl -inst)"
 
@@ -69,6 +61,14 @@
       src: /opt/otobo/Kernel/Config.pm.dist 
       dest: /opt/otobo/Kernel/Config.pm
       remote_src: yes
+
+  - name: change otobo directory permissions
+    file:
+      path: /opt/otobo
+      state: directory
+      owner: otobo
+      group: www-data
+      recurse: yes
 
   - name: install perl tidy all module
     apt:
@@ -102,3 +102,16 @@
       enabled: yes
       state: restarted
   
+  - name: start otobo daemon
+    become_user: otobo
+    shell: /opt/otobo/bin/otobo.Daemon.pl start
+
+  - name: configure cron jobs for the otobo user
+    shell: |
+      cd /opt/otobo/var/cron/
+      sh -c "for foo in *.dist; do cp $foo `basename $foo .dist`; done"
+      /opt/otobo/bin/Cron.sh start otobo
+
+  - name: install bash auto-completion
+    apt:
+      name: bash-completion

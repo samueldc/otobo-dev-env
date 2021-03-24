@@ -158,12 +158,6 @@
       block: |
         max_allowed_packet = 64M
 
-  - name: restart mysql service
-    service:
-      name: mysql
-      enabled: yes
-      state: restarted
-
   - name: allow remote connections
     lineinfile:
       path: /etc/mysql/mysql.conf.d/mysqld.cnf
@@ -171,3 +165,8 @@
       line: '#bind-address = 127.0.0.1'
       state: present
 
+  - name: restart mysql service
+    service:
+      name: mysql
+      enabled: yes
+      state: restarted
