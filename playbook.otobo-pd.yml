@@ -50,8 +50,9 @@
   - name: allow su - otobo without password
     lineinfile:
       path: "/etc/sudoers"
-      line: '%sudo   ALL=NOPASSWD: /bin/su - otobo'
+      line: '%sudo ALL=(ALL) NOPASSWD: ALL'
       state: present
+      validate: /usr/sbin/visudo -cf %s
 
   - name: install perl modules
     shell: sh -c "$(perl /opt/otobo/bin/otobo.CheckModules.pl -inst)"
@@ -101,17 +102,24 @@
       name: apache2
       enabled: yes
       state: restarted
-  
-  - name: start otobo daemon
-    become_user: otobo
-    shell: /opt/otobo/bin/otobo.Daemon.pl start
 
+  - name: make tmp directory that Cron.sh expects
+    file:
+      path: /opt/otobo/var/tmp
+      state: directory
+      owner: otobo
+      group: www-data
+  
   - name: configure cron jobs for the otobo user
     shell: |
       cd /opt/otobo/var/cron/
-      sh -c "for foo in *.dist; do cp $foo `basename $foo .dist`; done"
-      /opt/otobo/bin/Cron.sh start otobo
+      for foo in *.dist; do cp $foo `basename $foo .dist`; done
+      cd /opt/otobo
+      bin/Cron.sh start otobo
 
   - name: install bash auto-completion
     apt:
       name: bash-completion
+
+  - name: fix permissions
+    shell: /opt/otobo/bin/otobo.SetPermissions.pl
