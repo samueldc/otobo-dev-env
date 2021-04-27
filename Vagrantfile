@@ -53,6 +53,22 @@ Vagrant.configure("2") do |config|
     end
   end  
   
+  # Provision Znuny production vm
+  config.vm.define "znuny-pd", primary: true do |dv|
+    dv.vm.box = "generic/ubuntu2004"
+    dv.vm.network "private_network", ip: "10.0.0.13"
+    dv.vm.network "forwarded_port", guest: 80, host: 8083
+    dv.vm.hostname = "znuny-pd.localhost"
+    # dv.vm.synced_folder "/home/samueldc/Projects/otobo/", "/opt/otobo"
+    dv.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook.znuny-pd.yml"
+      ansible.host_vars = {
+        "znuny-dv" => {"ansible_python_interpreter" => "/usr/bin/python3"}
+      }
+      ansible.verbose = "-vvv"
+    end
+  end  
+  
   # Provision OTOBO database vm
   config.vm.define "otobo-db" do |db|
     db.vm.box = "debian/buster64"

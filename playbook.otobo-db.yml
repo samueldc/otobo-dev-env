@@ -149,6 +149,8 @@
         max_allowed_packet = 64M
         innodb_log_file_size = 256M
         query_cache_size = 32M
+        character_set_server = utf8
+        collation_server = utf8_general_ci
 
   - name: configure mysqldump variables
     blockinfile:
